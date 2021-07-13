@@ -1,4 +1,5 @@
 using System;
+using DnsClient;
 
 namespace OpenResolverChecker
 {
@@ -9,6 +10,10 @@ namespace OpenResolverChecker
         // public string OwnIP { get; init; }
         
         public string NameServerAddress { get; init; }
+        
+        public string DnsResponseCode { get; init; }
+        
+        public bool DnsResponseRaFlag { get; init; }
         
         public bool RecursionAvailable { get; init; }
     }

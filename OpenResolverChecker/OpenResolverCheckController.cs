@@ -15,7 +15,13 @@ namespace OpenResolverChecker
 
         private static readonly DnsQueryAndServerOptions dnsQueryOptions = new()
         {
-            Recursion = true
+            UseCache = false,
+            Recursion = true,
+            Retries = 10,
+            ThrowDnsErrors = false,
+            UseRandomNameServer = true,
+            ContinueOnDnsError = false,
+            ContinueOnEmptyResponse = false
         };
 
         [HttpGet("CheckServer")]
@@ -28,7 +34,10 @@ namespace OpenResolverChecker
             {
                 TimeOfAnswerUtc = DateTime.UtcNow,
                 NameServerAddress = addressOfNameServer,
-                RecursionAvailable = result.Header.RecursionAvailable
+                DnsResponseCode = result.Header.ResponseCode.ToString(),
+                DnsResponseRaFlag = result.Header.RecursionAvailable,
+                RecursionAvailable = result.Header.RecursionAvailable && result.Header.ResponseCode == DnsHeaderResponseCode.NoError
+                // TODO figure out what response codes can be accepted (everything except Refused OR only NoError)
             };
         }
         
