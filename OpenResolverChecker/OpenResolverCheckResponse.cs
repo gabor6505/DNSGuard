@@ -11,6 +11,7 @@ namespace OpenResolverChecker
         
         public string NameServerAddress { get; init; }
         
+        // TODO change to short (string for now for dev purposes)
         public string DnsResponseCode { get; init; }
         
         public bool DnsResponseRaFlag { get; init; }
