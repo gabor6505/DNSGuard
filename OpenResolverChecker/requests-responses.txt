@@ -1,0 +1,45 @@
+GET Request: CheckServer (string nameServerAddress, optional short nameServerPort, optional string queryAddress, optional string[] queryTypes)
+
+Response:
+//Id
+
+TimestampUtc
+//CheckDurationMillis
+
+// TODO this block could be omitted if an id was used
+NameServerAddress = string
+NameServerPort = short // TODO maybe remove
+QueryAddress = string
+QueryTypes = string[]
+
+possibleRecursion = bool
+connectionErrors = bool // if any result wasn't Success
+// TODO maybe skip checking remaining servers if there is already possible recursion (only for CheckServer, not for CheckServerDetails)
+
+
+GET Request: CheckServerDetails (string nameServerAddress, optional short nameServerPort, optional string queryAddress, optional string[] queryTypes)
+
+Response:
+//Id
+
+TimestampUtc
+//CheckDurationMillis
+
+NameServerAddress = string
+NameServerPort = ushort
+QueryAddress = string
+QueryTypes = string[]
+
+possibleRecursion = bool
+connectionErrors = bool // if any result wasn't Success
+
+DnsQueryDetails[] = {
+    nameServerIp = string
+    queryType = QueryType enum (string)
+    result = DnsQueryResult enum (string)
+    response (only if there was a response) = DnsQueryResponse {
+        ResponseCode = DnsHeaderResponseCode enum (short/string)
+        ResponseFlags = ushort //-> radix 16
+        RecursionAvailableFlag = bool
+    }
+}
