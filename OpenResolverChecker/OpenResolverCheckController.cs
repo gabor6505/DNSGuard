@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using DnsClient;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using Microsoft.Extensions.Options;
 
 namespace OpenResolverChecker
 {
@@ -11,9 +12,9 @@ namespace OpenResolverChecker
     [Route("OpenResolverCheck")]
     public class OpenResolverCheckController : ControllerBase
     {
-        private static readonly DnsQuestion dnsQuery = new("a.root-servers.net", QueryType.ANY);
+        private static readonly DnsQuestion DnsQuery = new("a.root-servers.net", QueryType.ANY);
 
-        private static readonly DnsQueryAndServerOptions dnsQueryOptions = new()
+        private static readonly DnsQueryAndServerOptions DnsQueryOptions = new()
         {
             UseCache = false,
             Recursion = true,
@@ -23,12 +24,19 @@ namespace OpenResolverChecker
             ContinueOnDnsError = false,
             ContinueOnEmptyResponse = false
         };
+        
+        private readonly OpenResolverCheckerOptions _options;
+
+        public OpenResolverCheckController(IOptions<OpenResolverCheckerOptions> options)
+        {
+            _options = options.Value;
+        }
 
         [HttpGet("CheckServer")]
         public async Task<OpenResolverCheckResponse> CheckServer(string addressOfNameServer)
         {
             var lookup = new LookupClient(ResolveAddressToIpAddresses(addressOfNameServer));
-            var result = await lookup.QueryAsync(dnsQuery, dnsQueryOptions);
+            var result = await lookup.QueryAsync(DnsQuery, DnsQueryOptions);
 
             return new OpenResolverCheckResponse
             {
@@ -36,7 +44,7 @@ namespace OpenResolverChecker
                 NameServerAddress = addressOfNameServer,
                 DnsResponseCode = result.Header.ResponseCode.ToString(),
                 DnsResponseRaFlag = result.Header.RecursionAvailable,
-                RecursionAvailable = result.Header.RecursionAvailable && result.Header.ResponseCode == DnsHeaderResponseCode.NoError
+                RecursionAvailable = result.Header.RecursionAvailable && result.Header.ResponseCode != DnsHeaderResponseCode.Refused
                 // TODO figure out what response codes can be accepted (everything except Refused OR only NoError)
             };
         }
