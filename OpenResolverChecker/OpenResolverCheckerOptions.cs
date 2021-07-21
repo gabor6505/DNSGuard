@@ -8,5 +8,6 @@ namespace OpenResolverChecker
         public bool EnableIPv6 { get; set; }
         
         public string DefaultDnsQueryAddress { get; set; }
+        public string DefaultDnsQueryTypes { get; set; }
     }
 }

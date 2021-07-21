@@ -25,6 +25,7 @@ namespace OpenResolverChecker
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "OpenResolverChecker", Version = "v1"});
             });
 
+            // TODO use custom OpenResolverCheckerOptions constructor to be able to tell if a setting is present or not
             services.Configure<OpenResolverCheckerOptions>(Configuration.GetSection(OpenResolverCheckerOptions.Key));
         }
 
