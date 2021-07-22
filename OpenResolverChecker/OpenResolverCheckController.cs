@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using DnsClient;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +15,9 @@ namespace OpenResolverChecker
     public class OpenResolverCheckController : ControllerBase
     {
         private const ushort DefaultNameServerPort = 53;
-        
+
+        private readonly bool _enableIPv4;
+        private readonly bool _enableIPv6;
         private readonly string _defaultQueryAddress = "google.com";
         private readonly QueryType[] _defaultQueryTypes = {QueryType.A, QueryType.AAAA, QueryType.NS, QueryType.SOA};
 
@@ -27,6 +31,9 @@ namespace OpenResolverChecker
             
             if (checkerOptions.DefaultDnsQueryTypes != null)
                 _defaultQueryTypes = ParseQueryTypes(checkerOptions.DefaultDnsQueryTypes);
+
+            _enableIPv4 = checkerOptions.EnableIPv4;
+            _enableIPv6 = checkerOptions.EnableIPv6;
         }
 
         [HttpGet("CheckServer")]
@@ -36,7 +43,10 @@ namespace OpenResolverChecker
             queryAddress ??= _defaultQueryAddress;
             var parsedQueryTypes = queryTypes != null ? ParseQueryTypes(queryTypes) : _defaultQueryTypes;
 
-            var checker = new OpenResolverChecker(ResolveAddressToIpAddresses(nameServerAddress), nameServerPort, queryAddress, parsedQueryTypes);
+            var ipAddresses = ResolveAddressToIpAddresses(nameServerAddress);
+            ipAddresses = FilterIpAddresses(ipAddresses);
+
+            var checker = new OpenResolverChecker(ipAddresses, nameServerPort, queryAddress, parsedQueryTypes);
             return await checker.CheckServer();
         }
 
@@ -51,6 +61,26 @@ namespace OpenResolverChecker
             // if not then do a dns query and if it doesnt return any IP address then throw an error
 
             return Dns.GetHostAddresses(address.Trim());
+        }
+
+        /**
+         * Filters the IP addresses according to the capabilities of this Checker instance
+         * (depending on EnableIPv4 and EnableIPv6 options)
+         */
+        private IPAddress[] FilterIpAddresses(IPAddress[] addresses)
+        {
+            if (_enableIPv4 && _enableIPv6) return addresses;
+            
+            var filteredAddresses = new List<IPAddress>();
+
+            foreach (var address in addresses)
+            {
+                if (!_enableIPv4 && address.AddressFamily == AddressFamily.InterNetwork) continue;
+                if (!_enableIPv6 && address.AddressFamily == AddressFamily.InterNetworkV6) continue;
+                filteredAddresses.Add(address);
+            }
+
+            return filteredAddresses.ToArray();
         }
 
         private static QueryType[] ParseQueryTypes(string queryTypesString)
