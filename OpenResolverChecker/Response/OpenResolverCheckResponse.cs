@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using DnsClient;
 
 namespace OpenResolverChecker.Response
@@ -7,7 +8,7 @@ namespace OpenResolverChecker.Response
     {
         public DateTime TimestampUtc { get; init; }
         
-        public string NameServerAddress { get; init; }
+        public string[] NameServerIpAddresses { get; init; }
         public ushort NameServerPort { get; init; }
         public string QueryAddress { get; init; }
         public QueryType[] QueryTypes { get; init; }
