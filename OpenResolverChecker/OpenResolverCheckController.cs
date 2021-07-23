@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -18,22 +19,19 @@ namespace OpenResolverChecker
 
         private readonly bool _enableIPv4;
         private readonly bool _enableIPv6;
-        private readonly string _defaultQueryAddress = "google.com";
-        private readonly QueryType[] _defaultQueryTypes = {QueryType.A, QueryType.AAAA, QueryType.NS, QueryType.SOA};
+        private readonly string _defaultQueryAddress;
+        private readonly IEnumerable<QueryType> _defaultQueryTypes;
 
         public OpenResolverCheckController(IOptions<OpenResolverCheckerOptions> options)
         {
             var checkerOptions = options.Value;
             
-            // Set default parameters from options, only if they are present
-            if (checkerOptions.DefaultDnsQueryAddress != null)
-                _defaultQueryAddress = checkerOptions.DefaultDnsQueryAddress;
-            
-            if (checkerOptions.DefaultDnsQueryTypes != null)
-                _defaultQueryTypes = ParseQueryTypes(checkerOptions.DefaultDnsQueryTypes);
-
+            // Set default parameters from options
             _enableIPv4 = checkerOptions.EnableIPv4;
             _enableIPv6 = checkerOptions.EnableIPv6;
+            _defaultQueryAddress = checkerOptions.DefaultDnsQueryAddress;
+            _defaultQueryTypes = checkerOptions.DefaultDnsQueryTypes;
+            Console.WriteLine(_defaultQueryAddress);
         }
 
         [HttpGet("CheckServer")]
@@ -83,21 +81,10 @@ namespace OpenResolverChecker
             return filteredAddresses.ToArray();
         }
 
-        private static QueryType[] ParseQueryTypes(string queryTypesString)
+        private static IEnumerable<QueryType> ParseQueryTypes(string queryTypesString)
         {
             // TODO only allow certain query types - throw an error or just skip requests for illegal types
-            var queryTypesSplit = queryTypesString.Split(",");
-            
-            var queryTypes = new QueryType[queryTypesSplit.Length];
-
-            for (var i = 0; i < queryTypesSplit.Length; i++)
-            {
-                var parseSuccessful = Enum.TryParse(queryTypesSplit[i], true, out queryTypes[i]);
-                if (!parseSuccessful)
-                    throw new Exception();
-            }
-
-            return queryTypes;
+            return queryTypesString.Split(",").Select(s => (QueryType) Enum.Parse(typeof(QueryType), s, true));
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using DnsClient;
@@ -22,9 +23,9 @@ namespace OpenResolverChecker
         private readonly IPAddress[] _nameServerIpAddresses;
         private readonly ushort _nameServerPort;
         private readonly string _queryAddress;
-        private readonly QueryType[] _queryTypes;
+        private readonly IEnumerable<QueryType> _queryTypes;
 
-        public OpenResolverChecker(IPAddress[] nameServerIpAddresses, ushort nameServerPort, string queryAddress, QueryType[] queryTypes)
+        public OpenResolverChecker(IPAddress[] nameServerIpAddresses, ushort nameServerPort, string queryAddress, IEnumerable<QueryType> queryTypes)
         {
             _nameServerIpAddresses = nameServerIpAddresses;
             _nameServerPort = nameServerPort;
