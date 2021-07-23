@@ -9,7 +9,7 @@ namespace OpenResolverChecker.Response
     {
         public DateTime TimestampUtc { get; init; }
         
-        public string[] NameServerIpAddresses { get; init; }
+        public IEnumerable<string> NameServerIpAddresses { get; init; }
         public ushort NameServerPort { get; init; }
         public string QueryAddress { get; init; }
         

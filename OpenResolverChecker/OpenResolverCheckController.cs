@@ -42,7 +42,7 @@ namespace OpenResolverChecker
             var parsedQueryTypes = queryTypes != null ? ParseQueryTypes(queryTypes) : _defaultQueryTypes;
 
             var ipAddresses = ResolveAddressToIpAddresses(nameServerAddress);
-            ipAddresses = FilterIpAddresses(ipAddresses);
+            if (!(_enableIPv4 && _enableIPv6)) ipAddresses = ipAddresses.Where(FilterIpAddress);
 
             var checker = new OpenResolverChecker(ipAddresses, nameServerPort, queryAddress, parsedQueryTypes);
             return await checker.CheckServer();
@@ -52,7 +52,7 @@ namespace OpenResolverChecker
          * For the input address (an IPv4/IPv6 address or a host name),
          * return a list of found IPv4 and IPv6 addresses.
          */
-        private static IPAddress[] ResolveAddressToIpAddresses(string address)
+        private static IEnumerable<IPAddress> ResolveAddressToIpAddresses(string address)
         {
             // TODO maybe use DnsClient instead of built-in GetHostAddresses
             // first check if address can be parsed to IPAddress,
@@ -62,29 +62,21 @@ namespace OpenResolverChecker
         }
 
         /**
-         * Filters the IP addresses according to the capabilities of this Checker instance
+         * Checks if this Checker instance can handle the specified IPAddress
          * (depending on EnableIPv4 and EnableIPv6 options)
          */
-        private IPAddress[] FilterIpAddresses(IPAddress[] addresses)
+        private bool FilterIpAddress(IPAddress address)
         {
-            if (_enableIPv4 && _enableIPv6) return addresses;
-            
-            var filteredAddresses = new List<IPAddress>();
-
-            foreach (var address in addresses)
-            {
-                if (!_enableIPv4 && address.AddressFamily == AddressFamily.InterNetwork) continue;
-                if (!_enableIPv6 && address.AddressFamily == AddressFamily.InterNetworkV6) continue;
-                filteredAddresses.Add(address);
-            }
-
-            return filteredAddresses.ToArray();
+            if (_enableIPv4 && address.AddressFamily == AddressFamily.InterNetwork) return true;
+            if (_enableIPv6 && address.AddressFamily == AddressFamily.InterNetworkV6) return true;
+            return false;
         }
 
         private static IEnumerable<QueryType> ParseQueryTypes(string queryTypesString)
         {
             // TODO only allow certain query types - throw an error or just skip requests for illegal types
-            return queryTypesString.Split(",").Select(s => (QueryType) Enum.Parse(typeof(QueryType), s, true));
+            return queryTypesString.Split(",")
+                .Select(s => Enum.Parse<QueryType>(s, true));
         }
     }
 }

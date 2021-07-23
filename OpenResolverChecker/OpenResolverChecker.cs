@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using DnsClient;
@@ -20,12 +21,12 @@ namespace OpenResolverChecker
             ContinueOnEmptyResponse = false
         };
         
-        private readonly IPAddress[] _nameServerIpAddresses;
+        private readonly IEnumerable<IPAddress> _nameServerIpAddresses;
         private readonly ushort _nameServerPort;
         private readonly string _queryAddress;
         private readonly IEnumerable<QueryType> _queryTypes;
 
-        public OpenResolverChecker(IPAddress[] nameServerIpAddresses, ushort nameServerPort, string queryAddress, IEnumerable<QueryType> queryTypes)
+        public OpenResolverChecker(IEnumerable<IPAddress> nameServerIpAddresses, ushort nameServerPort, string queryAddress, IEnumerable<QueryType> queryTypes)
         {
             _nameServerIpAddresses = nameServerIpAddresses;
             _nameServerPort = nameServerPort;
@@ -50,7 +51,7 @@ namespace OpenResolverChecker
             return new OpenResolverCheckResponse
             {
                 TimestampUtc = DateTime.UtcNow,
-                NameServerIpAddresses = Array.ConvertAll(_nameServerIpAddresses, input => input.ToString()),
+                NameServerIpAddresses = _nameServerIpAddresses.Select(ip => ip.ToString()),
                 NameServerPort = _nameServerPort,
                 QueryAddress = _queryAddress,
                 QueryTypes = _queryTypes,
