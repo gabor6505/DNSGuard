@@ -8,6 +8,7 @@ using DnsClient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OpenResolverChecker.Options;
+using OpenResolverChecker.Request.V1;
 using OpenResolverChecker.Response.V1;
 
 namespace OpenResolverChecker.Controller.V1
@@ -36,16 +37,15 @@ namespace OpenResolverChecker.Controller.V1
         }
 
         [HttpGet("CheckServer")]
-        public async Task<OpenResolverCheckResponse> CheckServer(string nameServerAddress, ushort nameServerPort = DefaultNameServerPort,
-            string queryAddress = null, string queryTypes = null)
+        public async Task<OpenResolverCheckResponse> CheckServer([FromQuery] GetCheckServer request)
         {
-            queryAddress ??= _defaultQueryAddress;
-            var parsedQueryTypes = queryTypes != null ? ParseQueryTypes(queryTypes) : _defaultQueryTypes;
+            var queryAddress = request.QueryAddress ?? _defaultQueryAddress;
+            var queryTypes = request.QueryTypes == null ? _defaultQueryTypes : ParseQueryTypes(request.QueryTypes);
 
-            var ipAddresses = ResolveAddressToIpAddresses(nameServerAddress);
+            var ipAddresses = ResolveAddressToIpAddresses(request.NameServerAddress);
             if (!(_enableIPv4 && _enableIPv6)) ipAddresses = ipAddresses.Where(FilterIpAddress);
 
-            var checker = new OpenResolverChecker(ipAddresses, nameServerPort, queryAddress, parsedQueryTypes);
+            var checker = new OpenResolverChecker(ipAddresses, request.NameServerPort, queryAddress, queryTypes);
             return await checker.CheckServer();
         }
 
