@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using DnsClient;
-using OpenResolverChecker.Response;
+using OpenResolverChecker.Response.V1;
 
 namespace OpenResolverChecker
 {

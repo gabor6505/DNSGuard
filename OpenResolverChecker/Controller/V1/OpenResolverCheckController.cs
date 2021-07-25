@@ -7,12 +7,13 @@ using System.Threading.Tasks;
 using DnsClient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using OpenResolverChecker.Response;
+using OpenResolverChecker.Options;
+using OpenResolverChecker.Response.V1;
 
-namespace OpenResolverChecker
+namespace OpenResolverChecker.Controller.V1
 {
     [ApiController]
-    [Route("OpenResolverCheck")]
+    [Route("OpenResolverChecker/v1")]
     public class OpenResolverCheckController : ControllerBase
     {
         private const ushort DefaultNameServerPort = 53;

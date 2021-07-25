@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using DnsClient;
 
-namespace OpenResolverChecker.Response
+namespace OpenResolverChecker.Response.V1
 {
     public class OpenResolverCheckResponse
     {
