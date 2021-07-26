@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using DnsClient;
-
 namespace OpenResolverChecker.Options
 {
     public class OpenResolverCheckerOptions
@@ -13,7 +9,7 @@ namespace OpenResolverChecker.Options
 
         public string DefaultDnsQueryAddress { get; init; } = "google.com";
         
-        [JsonConverter(typeof(QueryTypeEnumerableJsonConverter))]
-        public IEnumerable<QueryType> DefaultDnsQueryTypes { get; init; } = new [] {QueryType.A, QueryType.AAAA, QueryType.NS, QueryType.SOA};
+        // TODO proper binding of string to QueryType[]
+        public string DefaultDnsQueryTypes { get; init; } = "A,AAAA,NS,SOA";
     }
 }

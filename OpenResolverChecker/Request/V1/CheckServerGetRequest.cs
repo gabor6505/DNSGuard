@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using DnsClient;
 
 namespace OpenResolverChecker.Request.V1
 {
-    public class GetCheckServer
+    public class CheckServerGetRequest
     {
         [Required]
         public string NameServerAddress { get; init; }
@@ -11,7 +12,7 @@ namespace OpenResolverChecker.Request.V1
 
         public string QueryAddress { get; init; } = null;
         
-        // TODO create model binder for IEnumerable<QueryType>
-        public string QueryTypes { get; init; } = null;
+        // TODO allow comma separated list
+        public QueryType[] QueryTypes { get; init; } = null;
     }
 }

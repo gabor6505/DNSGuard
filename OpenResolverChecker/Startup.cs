@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -20,13 +21,17 @@ namespace OpenResolverChecker
         // Add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers().AddJsonOptions(o =>
+            {
+                // Convert Enum values to strings instead of integers
+                o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
+            
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "OpenResolverChecker", Version = "v1"});
             });
 
-            // TODO use custom OpenResolverCheckerOptions constructor to be able to tell if a setting is present or not
             services.Configure<OpenResolverCheckerOptions>(Configuration.GetSection(OpenResolverCheckerOptions.Key));
         }
 
