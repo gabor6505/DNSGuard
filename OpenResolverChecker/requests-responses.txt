@@ -1,4 +1,9 @@
-GET Request: CheckServer (string nameServerAddress, optional short nameServerPort, optional string queryAddress, optional string[] queryTypes)
+GET Request: /OpenResolverChecker/v1/CheckServers
+CheckServersGetRequest {
+    NameServerAddresses = string[] // any element must be in the format of: <hostname|ipv4_addr|ipv6_addr>[:port] - ipv6 addresses must be enclosed in [] if a port is specified
+    QueryAddress = string (optional)
+    QueryTypes = QueryType enum (optional)
+}
 
 Response:
 //Id
@@ -6,18 +11,24 @@ Response:
 TimestampUtc
 //CheckDurationMillis
 
-// TODO this block could be omitted if an id was used
-NameServerAddress = string
-NameServerPort = short // TODO maybe remove
 QueryAddress = string
-QueryTypes = string[]
 
-possibleRecursion = bool
-connectionErrors = bool // if any result wasn't Success
-// TODO maybe skip checking remaining servers if there is already possible recursion (only for CheckServer, not for CheckServerDetails)
+DnsQueryResult[] = {
+    NameServerIp = string
+    QueryType = QueryType enum (string) // TODO could be named (query)RecordType
+    
+    ConnectionError = ConnectionError enum (string)
+    PossibleRecursion = bool // if connectionError != None -> always true (TODO could be false or left out of response?)
+}
 
 
-GET Request: CheckServerDetails (string nameServerAddress, optional short nameServerPort, optional string queryAddress, optional string[] queryTypes)
+
+GET Request: /OpenResolverChecker/v1/CheckServersDetailed
+CheckServersGetRequest {
+    NameServerAddresses = string[] // any element must be in the format of: <hostname|ipv4_addr|ipv6_addr>[:port] - ipv6 addresses must be enclosed in [] if a port is specified
+    QueryAddress = string (optional)
+    QueryTypes = QueryType enum (optional)
+}
 
 Response:
 //Id
@@ -25,21 +36,26 @@ Response:
 TimestampUtc
 //CheckDurationMillis
 
-NameServerAddress = string
-NameServerPort = ushort
 QueryAddress = string
-QueryTypes = string[]
 
-possibleRecursion = bool
-connectionErrors = bool // if any result wasn't Success
-
-DnsQueryDetails[] = {
-    nameServerIp = string
-    queryType = QueryType enum (string)
-    result = DnsQueryResult enum (string)
-    response (only if there was a response) = DnsQueryResponse {
+DnsQueryResult[] = {
+    NameServerIp = string
+    QueryType = QueryType enum (string) // TODO could be named (query)RecordType
+    
+    ConnectionError = ConnectionError enum (string)
+    PossibleRecursion = bool // if connectionError != None -> always true (TODO could be false?)
+    
+    DnsQueryResponse (only if connectionError == None) = {
         ResponseCode = DnsHeaderResponseCode enum (short/string)
         ResponseFlags = ushort //-> radix 16
         RecursionAvailableFlag = bool
+        AnswerRecordCount = ushort
     }
 }
+
+For IP ranges, 2 separate Requests would be best in my opinion (CheckRange & CheckRangeDetailed), this would avoid some address parsing complexity
+
+For any response, if there are more than x results, return a UUID and the amount of results/pages so the client can request them in pages
+
+IP Range testing could also be moved to another microservice, which handles the requests/responses and the paging;
+in this case the OpenResolverChecker service should be limited to a maximum amount of checks per request
