@@ -8,8 +8,7 @@ namespace OpenResolverChecker.Response.V1
     {
         public DateTime TimestampUtc { get; init; }
         
-        public IEnumerable<string> NameServerIpAddresses { get; init; }
-        public ushort NameServerPort { get; init; }
+        public IEnumerable<string> NameServerAddresses { get; init; }
         public string QueryAddress { get; init; }
         public IEnumerable<QueryType> QueryTypes { get; init; }
 

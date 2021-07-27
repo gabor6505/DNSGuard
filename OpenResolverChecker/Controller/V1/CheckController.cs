@@ -17,6 +17,8 @@ namespace OpenResolverChecker.Controller.V1
     [Route("OpenResolverChecker/v1")]
     public class CheckController : ControllerBase
     {
+        private const ushort DefaultNameServerPort = 53;
+        
         private readonly CheckerOptions _options;
 
         public CheckController(IOptions<CheckerOptions> options)
@@ -32,34 +34,22 @@ namespace OpenResolverChecker.Controller.V1
             // TODO filter enum values - custom model binder or enum
             var queryTypes = request.QueryTypes ?? ParseQueryTypes(_options.DefaultDnsQueryTypes);
 
-            var ipAddresses = ResolveAddressToIpAddresses(request.NameServerAddress);
+            var nameServers = AddressParser.ParseAddress(request.NameServerAddress, DefaultNameServerPort);
             if (!(_options.EnableIPv4 && _options.EnableIPv6))
-                ipAddresses = ipAddresses.Where(FilterIpAddress);
+                nameServers = nameServers.Where(FilterEndPoint);
 
-            var checker = new OpenResolverChecker(ipAddresses, request.NameServerPort, queryAddress, queryTypes);
+            var checker = new OpenResolverChecker(nameServers, queryAddress, queryTypes);
             return await checker.CheckServer();
-        }
-
-        /**
-         * For the input address (an IPv4/IPv6 address or a host name),
-         * return a list of found IPv4 and IPv6 addresses.
-         */
-        private static IEnumerable<IPAddress> ResolveAddressToIpAddresses(string address)
-        {
-            // TODO first check if address can be parsed to IPEndPoint,
-            // if not then do a dns query and if it doesnt return any IP address then throw an error
-
-            return Dns.GetHostAddresses(address.Trim());
         }
 
         /**
          * Checks if this Checker instance can handle the specified IPAddress
          * (depending on EnableIPv4 and EnableIPv6 options)
          */
-        private bool FilterIpAddress(IPAddress address)
+        private bool FilterEndPoint(EndPoint endPoint)
         {
-            if (_options.EnableIPv4 && address.AddressFamily == AddressFamily.InterNetwork) return true;
-            if (_options.EnableIPv6 && address.AddressFamily == AddressFamily.InterNetworkV6) return true;
+            if (_options.EnableIPv4 && endPoint.AddressFamily == AddressFamily.InterNetwork) return true;
+            if (_options.EnableIPv6 && endPoint.AddressFamily == AddressFamily.InterNetworkV6) return true;
             return false;
         }
 

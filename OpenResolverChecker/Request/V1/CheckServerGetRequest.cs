@@ -8,8 +8,6 @@ namespace OpenResolverChecker.Request.V1
         [Required]
         public string NameServerAddress { get; init; }
 
-        public ushort NameServerPort { get; init; } = 53;
-
         public string QueryAddress { get; init; } = null;
         
         // TODO allow comma separated list

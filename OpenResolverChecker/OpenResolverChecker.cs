@@ -21,15 +21,13 @@ namespace OpenResolverChecker
             ContinueOnEmptyResponse = false
         };
         
-        private readonly IEnumerable<IPAddress> _nameServerIpAddresses;
-        private readonly ushort _nameServerPort;
+        private readonly IEnumerable<IPEndPoint> _nameServers;
         private readonly string _queryAddress;
         private readonly IEnumerable<QueryType> _queryTypes;
 
-        public OpenResolverChecker(IEnumerable<IPAddress> nameServerIpAddresses, ushort nameServerPort, string queryAddress, IEnumerable<QueryType> queryTypes)
+        public OpenResolverChecker(IEnumerable<IPEndPoint> nameServers, string queryAddress, IEnumerable<QueryType> queryTypes)
         {
-            _nameServerIpAddresses = nameServerIpAddresses;
-            _nameServerPort = nameServerPort;
+            _nameServers = nameServers;
             _queryAddress = queryAddress;
             _queryTypes = queryTypes;
         }
@@ -38,9 +36,9 @@ namespace OpenResolverChecker
         {
             var possibleRecursion = false;
 
-            foreach (var ipAddress in _nameServerIpAddresses)
+            foreach (var nameServer in _nameServers)
             {
-                var lookup = new LookupClient(ipAddress, _nameServerPort);
+                var lookup = new LookupClient(nameServer);
                 foreach (var queryType in _queryTypes)
                 {
                     var response = await lookup.QueryAsync(new DnsQuestion(_queryAddress, queryType), DnsQueryOptions);
@@ -51,8 +49,7 @@ namespace OpenResolverChecker
             return new CheckResponse
             {
                 TimestampUtc = DateTime.UtcNow,
-                NameServerIpAddresses = _nameServerIpAddresses.Select(ip => ip.ToString()),
-                NameServerPort = _nameServerPort,
+                NameServerAddresses = _nameServers.Select(endPoint => endPoint.ToString()),
                 QueryAddress = _queryAddress,
                 QueryTypes = _queryTypes,
                 PossibleRecursion = possibleRecursion,
