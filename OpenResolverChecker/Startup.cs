@@ -32,7 +32,7 @@ namespace OpenResolverChecker
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "OpenResolverChecker", Version = "v1"});
             });
 
-            services.Configure<OpenResolverCheckerOptions>(Configuration.GetSection(OpenResolverCheckerOptions.Key));
+            services.Configure<CheckerOptions>(Configuration.GetSection(CheckerOptions.Key));
         }
 
         // Configure the HTTP request pipeline.

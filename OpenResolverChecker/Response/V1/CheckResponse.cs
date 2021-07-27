@@ -4,7 +4,7 @@ using DnsClient;
 
 namespace OpenResolverChecker.Response.V1
 {
-    public class OpenResolverCheckResponse
+    public class CheckResponse
     {
         public DateTime TimestampUtc { get; init; }
         

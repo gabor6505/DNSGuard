@@ -15,17 +15,17 @@ namespace OpenResolverChecker.Controller.V1
 {
     [ApiController]
     [Route("OpenResolverChecker/v1")]
-    public class OpenResolverCheckController : ControllerBase
+    public class CheckController : ControllerBase
     {
-        private readonly OpenResolverCheckerOptions _options;
+        private readonly CheckerOptions _options;
 
-        public OpenResolverCheckController(IOptions<OpenResolverCheckerOptions> options)
+        public CheckController(IOptions<CheckerOptions> options)
         {
             _options = options.Value;
         }
 
         [HttpGet("CheckServer")]
-        public async Task<OpenResolverCheckResponse> CheckServer([FromQuery] CheckServerGetRequest request)
+        public async Task<CheckResponse> CheckServer([FromQuery] CheckServerGetRequest request)
         {
             var queryAddress = request.QueryAddress ?? _options.DefaultDnsQueryAddress;
             

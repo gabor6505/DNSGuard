@@ -34,7 +34,7 @@ namespace OpenResolverChecker
             _queryTypes = queryTypes;
         }
 
-        public async Task<OpenResolverCheckResponse> CheckServer()
+        public async Task<CheckResponse> CheckServer()
         {
             var possibleRecursion = false;
 
@@ -48,7 +48,7 @@ namespace OpenResolverChecker
                 }
             }
 
-            return new OpenResolverCheckResponse
+            return new CheckResponse
             {
                 TimestampUtc = DateTime.UtcNow,
                 NameServerIpAddresses = _nameServerIpAddresses.Select(ip => ip.ToString()),

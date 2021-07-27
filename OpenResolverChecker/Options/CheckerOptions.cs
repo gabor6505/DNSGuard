@@ -1,6 +1,6 @@
 namespace OpenResolverChecker.Options
 {
-    public class OpenResolverCheckerOptions
+    public class CheckerOptions
     {
         public const string Key = "OpenResolverChecker";
 
