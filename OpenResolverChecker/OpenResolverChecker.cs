@@ -14,7 +14,7 @@ namespace OpenResolverChecker
         {
             UseCache = false,
             Recursion = true,
-            Retries = 10,
+            Retries = 1,
             ThrowDnsErrors = false,
             UseRandomNameServer = false,
             ContinueOnDnsError = false,
