@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DnsClient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using OpenResolverChecker.AddressParsing;
 using OpenResolverChecker.Options;
 using OpenResolverChecker.Request.V1;
 using OpenResolverChecker.Response.V1;
@@ -21,6 +22,8 @@ namespace OpenResolverChecker.Controller.V1
         
         private readonly CheckerOptions _options;
 
+        private readonly AddressParser _addressParser = new(DefaultNameServerPort);
+
         public CheckController(IOptions<CheckerOptions> options)
         {
             _options = options.Value;
@@ -34,7 +37,7 @@ namespace OpenResolverChecker.Controller.V1
             // TODO filter enum values - custom model binder or enum
             var queryTypes = request.QueryTypes ?? ParseQueryTypes(_options.DefaultDnsQueryTypes);
 
-            var nameServers = AddressParser.ParseAddress(request.NameServerAddress, DefaultNameServerPort);
+            var nameServers = _addressParser.Parse(request.NameServerAddress);
             if (!(_options.EnableIPv4 && _options.EnableIPv6))
                 nameServers = nameServers.Where(FilterEndPoint);
 
