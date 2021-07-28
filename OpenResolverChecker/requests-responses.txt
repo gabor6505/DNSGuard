@@ -15,7 +15,7 @@ QueryAddress = string
 
 DnsQueryResult[] = {
     NameServerIp = string
-    QueryType = QueryType enum (string) // TODO could be named (query)RecordType
+    QueryType = QueryType enum (string) // TODO could be named queryRecordType
     
     ConnectionError = ConnectionError enum (string)
     PossibleRecursion = bool // if connectionError != None -> always true (TODO could be false or left out of response?)
@@ -40,10 +40,10 @@ QueryAddress = string
 
 DnsQueryResult[] = {
     NameServerIp = string
-    QueryType = QueryType enum (string) // TODO could be named (query)RecordType
+    QueryType = QueryType enum (string) // TODO could be named queryRecordType
     
     ConnectionError = ConnectionError enum (string)
-    PossibleRecursion = bool // if connectionError != None -> always true (TODO could be false?)
+    PossibleRecursion = bool // if connectionError != None -> always true (TODO could be false or left out of response?)
     
     DnsQueryResponse (only if connectionError == None) = {
         ResponseCode = DnsHeaderResponseCode enum (short/string)
@@ -53,6 +53,9 @@ DnsQueryResult[] = {
     }
 }
 
+// TODO IP ranges, same structure as above
+
+Considerations TODO:
 For IP ranges, 2 separate Requests would be best in my opinion (CheckRange & CheckRangeDetailed), this would avoid some address parsing complexity
 
 For any response, if there are more than x results, return a UUID and the amount of results/pages so the client can request them in pages
