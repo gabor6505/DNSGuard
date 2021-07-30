@@ -32,6 +32,17 @@ namespace OpenResolverChecker.Controller.V1
         [HttpGet("CheckServer")]
         public async Task<CheckResponse> CheckServer([FromQuery] CheckServerGetRequest request)
         {
+            return await CheckServer(request, false);
+        }
+
+        [HttpGet("CheckServerDetailed")]
+        public async Task<CheckResponse> CheckServerDetailed([FromQuery] CheckServerGetRequest request)
+        {
+            return await CheckServer(request, true);
+        }
+
+        private async Task<CheckResponse> CheckServer(CheckServerGetRequest request, bool detailed)
+        {
             var queryAddress = request.QueryAddress ?? _options.DefaultDnsQueryAddress;
             
             // TODO filter enum values - custom model binder or enum
@@ -41,7 +52,7 @@ namespace OpenResolverChecker.Controller.V1
             if (!(_options.EnableIPv4 && _options.EnableIPv6))
                 nameServers = nameServers.Where(FilterEndPoint);
 
-            var checker = new OpenResolverChecker(nameServers, queryAddress, queryTypes, false);
+            var checker = new OpenResolverChecker(nameServers, queryAddress, queryTypes, detailed);
             return await checker.CheckServersAsync();
         }
 
