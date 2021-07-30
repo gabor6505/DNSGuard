@@ -29,26 +29,26 @@ namespace OpenResolverChecker.Controller.V1
             _options = options.Value;
         }
 
-        [HttpGet("CheckServer")]
-        public async Task<CheckResponse> CheckServer([FromQuery] CheckServerGetRequest request)
+        [HttpGet("CheckServers")]
+        public async Task<CheckResponse> CheckServers([FromQuery] CheckServersGetRequest request)
         {
-            return await CheckServer(request, false);
+            return await CheckServers(request, false);
         }
 
-        [HttpGet("CheckServerDetailed")]
-        public async Task<CheckResponse> CheckServerDetailed([FromQuery] CheckServerGetRequest request)
+        [HttpGet("CheckServersDetailed")]
+        public async Task<CheckResponse> CheckServersDetailed([FromQuery] CheckServersGetRequest request)
         {
-            return await CheckServer(request, true);
+            return await CheckServers(request, true);
         }
 
-        private async Task<CheckResponse> CheckServer(CheckServerGetRequest request, bool detailed)
+        private async Task<CheckResponse> CheckServers(CheckServersGetRequest request, bool detailed)
         {
             var queryAddress = request.QueryAddress ?? _options.DefaultDnsQueryAddress;
             
             // TODO filter enum values - custom model binder or enum
             var queryTypes = request.QueryTypes ?? ParseQueryTypes(_options.DefaultDnsQueryTypes);
 
-            var nameServers = _addressParser.Parse(request.NameServerAddress);
+            var nameServers = _addressParser.Parse(request.NameServerAddresses);
             if (!(_options.EnableIPv4 && _options.EnableIPv6))
                 nameServers = nameServers.Where(FilterEndPoint);
 

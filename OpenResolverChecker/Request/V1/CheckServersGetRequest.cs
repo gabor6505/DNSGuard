@@ -3,10 +3,10 @@ using DnsClient;
 
 namespace OpenResolverChecker.Request.V1
 {
-    public class CheckServerGetRequest
+    public class CheckServersGetRequest
     {
         [Required]
-        public string NameServerAddress { get; init; }
+        public string[] NameServerAddresses { get; init; }
 
         public string QueryAddress { get; init; } = null;
         
