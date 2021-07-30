@@ -48,7 +48,7 @@ CheckResult[] = {
     DnsQueryResponse (only if connectionError == None) = {
         ResponseCode = DnsHeaderResponseCode enum (short/string)
         ResponseFlags = string // ushort //-> radix 16
-        RecursionAvailableFlag = bool
+        //RecursionAvailableFlag = bool
         AnswerRecordCount = ushort
     }
 }

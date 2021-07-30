@@ -65,7 +65,6 @@ namespace OpenResolverChecker
                 {
                     ResponseCode = lookupResponse.Header.ResponseCode,
                     ResponseFlags = GetHeaderFlags(lookupResponse.Header),
-                    RecursionAvailableFlag = lookupResponse.Header.RecursionAvailable,
                     AnswerRecordCount = (ushort) lookupResponse.Header.AnswerCount
                 };
             }
