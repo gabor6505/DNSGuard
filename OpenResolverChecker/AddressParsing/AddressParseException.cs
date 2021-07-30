@@ -2,7 +2,6 @@ using System;
 
 namespace OpenResolverChecker.AddressParsing
 {
-    
     public class AddressParseException : Exception
     {
         public AddressParseException(string address, Exception innerException = null)

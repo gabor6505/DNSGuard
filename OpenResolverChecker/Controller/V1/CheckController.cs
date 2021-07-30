@@ -41,8 +41,8 @@ namespace OpenResolverChecker.Controller.V1
             if (!(_options.EnableIPv4 && _options.EnableIPv6))
                 nameServers = nameServers.Where(FilterEndPoint);
 
-            var checker = new OpenResolverChecker(nameServers, queryAddress, queryTypes);
-            return await checker.CheckServer();
+            var checker = new OpenResolverChecker(nameServers, queryAddress, queryTypes, false);
+            return await checker.CheckServersAsync();
         }
 
         /**

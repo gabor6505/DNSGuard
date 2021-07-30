@@ -1,6 +1,6 @@
 GET Request: /OpenResolverChecker/v1/CheckServers
 CheckServersGetRequest {
-    NameServerAddresses = string[] // any element must be in the format of: <hostname|ipv4_addr|ipv6_addr>[:port] - ipv6 addresses must be enclosed in [] if a port is specified
+    NameServerAddresses = string[] // any element must be in the format of: <hostname|ipv4_addr|ipv6_addr>[:<port>] - ipv6 addresses must be enclosed in [] if a port is specified
     QueryAddress = string (optional)
     QueryTypes = QueryType enum (optional)
 }
@@ -13,7 +13,7 @@ TimestampUtc
 
 QueryAddress = string
 
-DnsQueryResult[] = {
+CheckResult[] = {
     NameServerIp = string
     QueryType = QueryType enum (string) // TODO could be named queryRecordType
     
@@ -25,7 +25,7 @@ DnsQueryResult[] = {
 
 GET Request: /OpenResolverChecker/v1/CheckServersDetailed
 CheckServersGetRequest {
-    NameServerAddresses = string[] // any element must be in the format of: <hostname|ipv4_addr|ipv6_addr>[:port] - ipv6 addresses must be enclosed in [] if a port is specified
+    NameServerAddresses = string[] // any element must be in the format of: <hostname|ipv4_addr|ipv6_addr>[:<port>] - ipv6 addresses must be enclosed in [] if a port is specified
     QueryAddress = string (optional)
     QueryTypes = QueryType enum (optional)
 }
@@ -38,7 +38,7 @@ TimestampUtc
 
 QueryAddress = string
 
-DnsQueryResult[] = {
+CheckResult[] = {
     NameServerIp = string
     QueryType = QueryType enum (string) // TODO could be named queryRecordType
     
@@ -47,7 +47,7 @@ DnsQueryResult[] = {
     
     DnsQueryResponse (only if connectionError == None) = {
         ResponseCode = DnsHeaderResponseCode enum (short/string)
-        ResponseFlags = ushort //-> radix 16
+        ResponseFlags = string // ushort //-> radix 16
         RecursionAvailableFlag = bool
         AnswerRecordCount = ushort
     }

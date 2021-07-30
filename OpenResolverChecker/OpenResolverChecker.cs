@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using DnsClient;
 using OpenResolverChecker.Response.V1;
+using DnsQueryResponse = OpenResolverChecker.Response.V1.DnsQueryResponse;
 
 namespace OpenResolverChecker
 {
@@ -24,37 +25,71 @@ namespace OpenResolverChecker
         private readonly IEnumerable<IPEndPoint> _nameServers;
         private readonly string _queryAddress;
         private readonly IEnumerable<QueryType> _queryTypes;
+        private readonly bool _detailed;
 
-        public OpenResolverChecker(IEnumerable<IPEndPoint> nameServers, string queryAddress, IEnumerable<QueryType> queryTypes)
+        public OpenResolverChecker(IEnumerable<IPEndPoint> nameServers, string queryAddress, IEnumerable<QueryType> queryTypes, bool detailed)
         {
             _nameServers = nameServers;
             _queryAddress = queryAddress;
             _queryTypes = queryTypes;
+            _detailed = detailed;
         }
 
-        public async Task<CheckResponse> CheckServer()
+        public async Task<CheckResponse> CheckServersAsync()
         {
-            var possibleRecursion = false;
-
-            foreach (var nameServer in _nameServers)
+            // TODO maybe run queries in parallel - compare performance
+            var checkTasks = _nameServers.SelectMany(nameServer =>
             {
-                var lookup = new LookupClient(nameServer);
-                foreach (var queryType in _queryTypes)
-                {
-                    var response = await lookup.QueryAsync(new DnsQuestion(_queryAddress, queryType), DnsQueryOptions);
-                    if (!possibleRecursion) possibleRecursion = response.Header.RecursionAvailable;
-                }
-            }
+                var lookupClient = new LookupClient(nameServer);
+                return _queryTypes.Select(queryType => CheckServerAsync(lookupClient, queryType));
+            });
+
+            var checkResults = await Task.WhenAll(checkTasks);
 
             return new CheckResponse
             {
                 TimestampUtc = DateTime.UtcNow,
-                NameServerAddresses = _nameServers.Select(endPoint => endPoint.ToString()),
                 QueryAddress = _queryAddress,
-                QueryTypes = _queryTypes,
-                PossibleRecursion = possibleRecursion,
-                ConnectionErrors = false
+                CheckResults = checkResults
             };
+        }
+
+        private async Task<CheckResult> CheckServerAsync(ILookupClient lookupClient, QueryType queryType)
+        {
+            var lookupResponse = await lookupClient.QueryAsync(new DnsQuestion(_queryAddress, queryType), DnsQueryOptions);
+
+            DnsQueryResponse dnsQueryResponse = null;
+            if (_detailed)
+            {
+                dnsQueryResponse = new DnsQueryResponse
+                {
+                    ResponseCode = lookupResponse.Header.ResponseCode,
+                    ResponseFlags = GetHeaderFlags(lookupResponse.Header),
+                    RecursionAvailableFlag = lookupResponse.Header.RecursionAvailable,
+                    AnswerRecordCount = (ushort) lookupResponse.Header.AnswerCount
+                };
+            }
+
+            return new CheckResult
+            {
+                NameServerIp = lookupClient.NameServers.First().ToString(),
+                QueryType = queryType,
+                ConnectionError = ConnectionError.None,
+                PossibleRecursion = lookupResponse.Header.RecursionAvailable,
+                DnsQueryResponse = dnsQueryResponse
+            };
+        }
+
+        private static string GetHeaderFlags(DnsResponseHeader header)
+        {
+            var flags = new List<string>();
+            if (header.HasAuthorityAnswer) flags.Add("aa");
+            if (header.ResultTruncated) flags.Add("tc");
+            if (header.RecursionDesired) flags.Add("rd");
+            if (header.RecursionAvailable) flags.Add("ra");
+            if (header.IsAuthenticData) flags.Add("ad");
+            if (header.IsCheckingDisabled) flags.Add("cd");
+            return string.Join(" ", flags);
         }
     }
 }
