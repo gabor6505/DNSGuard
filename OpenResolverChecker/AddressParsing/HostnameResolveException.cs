@@ -4,8 +4,8 @@ namespace OpenResolverChecker.AddressParsing
 {
     public class HostnameResolveException : Exception
     {
-        public HostnameResolveException(string address, Exception innerException = null)
-            : base($"Failed to resolve hostname '{address}'! The domain might not exist.", innerException)
+        public HostnameResolveException(string hostname, Exception innerException = null)
+            : base($"Failed to resolve hostname '{hostname}'! The domain might not exist.", innerException)
         {
         }
     }

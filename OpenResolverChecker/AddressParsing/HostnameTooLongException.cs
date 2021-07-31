@@ -5,7 +5,7 @@ namespace OpenResolverChecker.AddressParsing
     public class HostnameTooLongException : Exception
     {
         public HostnameTooLongException(string hostname)
-            : base($"'{hostname}' is too long, it must be no longer than 254 characters.")
+            : base($"Hostname '{hostname}' is too long, it must be no longer than 254 characters.")
         {
         }
     }

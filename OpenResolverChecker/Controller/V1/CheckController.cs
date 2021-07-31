@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DnsClient;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OpenResolverChecker.AddressParsing;
@@ -28,15 +29,37 @@ namespace OpenResolverChecker.Controller.V1
         }
 
         [HttpGet("CheckServers")]
-        public async Task<CheckResponse> CheckServers([FromQuery] CheckServersGetRequest request)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CheckResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CheckServers([FromQuery] CheckServersGetRequest request)
         {
-            return await CheckServers(request, false);
+            return await TryCheckServers(request, false);
         }
 
         [HttpGet("CheckServersDetailed")]
-        public async Task<CheckResponse> CheckServersDetailed([FromQuery] CheckServersGetRequest request)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CheckResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CheckServersDetailed([FromQuery] CheckServersGetRequest request)
         {
-            return await CheckServers(request, true);
+            return await TryCheckServers(request, true);
+        }
+        
+        private async Task<IActionResult> TryCheckServers(CheckServersGetRequest request, bool detailed)
+        {
+            try
+            {
+                return Ok(await CheckServers(request, detailed));
+            }
+            catch (Exception e) when(e is AddressParseException or HostnameResolveException or HostnameTooLongException)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         private async Task<CheckResponse> CheckServers(CheckServersGetRequest request, bool detailed)
