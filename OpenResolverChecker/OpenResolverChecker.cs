@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using DnsClient;
 using OpenResolverChecker.Response.V1;
@@ -15,13 +16,14 @@ namespace OpenResolverChecker
         {
             UseCache = false,
             Recursion = true,
-            Retries = 1,
+            Retries = 0,
             ThrowDnsErrors = false,
             UseRandomNameServer = false,
             ContinueOnDnsError = false,
-            ContinueOnEmptyResponse = false
+            ContinueOnEmptyResponse = false,
+            Timeout = TimeSpan.FromSeconds(2)
         };
-        
+
         private readonly IEnumerable<IPEndPoint> _nameServers;
         private readonly string _queryAddress;
         private readonly IEnumerable<QueryType> _queryTypes;
@@ -56,10 +58,29 @@ namespace OpenResolverChecker
 
         private async Task<CheckResult> CheckServerAsync(ILookupClient lookupClient, QueryType queryType)
         {
-            var lookupResponse = await lookupClient.QueryAsync(new DnsQuestion(_queryAddress, queryType), DnsQueryOptions);
+            IDnsQueryResponse lookupResponse = null;
+            var connectionError = ConnectionError.None;
+            try
+            {
+                lookupResponse = await lookupClient.QueryAsync(new DnsQuestion(_queryAddress, queryType), DnsQueryOptions);
+            }
+            catch (DnsResponseException e)
+            {
+                if (e.InnerException != null)
+                {
+                    connectionError = e.InnerException switch
+                    {
+                        // TODO cases for more common SocketErrors and inner exceptions
+                        SocketException {SocketErrorCode: SocketError.HostUnreachable} => ConnectionError.HostUnreachable,
+                        OperationCanceledException => ConnectionError.Timeout,
+                        _ => ConnectionError.Unknown
+                    };
+                }
+                else connectionError = ConnectionError.Unknown;
+            }
 
             DnsQueryResponse dnsQueryResponse = null;
-            if (_detailed)
+            if (_detailed && lookupResponse != null)
             {
                 dnsQueryResponse = new DnsQueryResponse
                 {
@@ -73,8 +94,8 @@ namespace OpenResolverChecker
             {
                 NameServerIp = lookupClient.NameServers.First().ToString(),
                 QueryType = queryType,
-                ConnectionError = ConnectionError.None,
-                PossibleRecursion = lookupResponse.Header.RecursionAvailable,
+                ConnectionError = connectionError,
+                PossibleRecursion = lookupResponse?.Header?.RecursionAvailable ?? true,
                 DnsQueryResponse = dnsQueryResponse
             };
         }

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 using DnsClient;
 using Microsoft.AspNetCore.Mvc;
@@ -49,22 +47,9 @@ namespace OpenResolverChecker.Controller.V1
             var queryTypes = request.QueryTypes ?? ParseQueryTypes(_options.DefaultDnsQueryTypes);
 
             var nameServers = _addressParser.Parse(request.NameServerAddresses);
-            if (!(_options.EnableIPv4 && _options.EnableIPv6))
-                nameServers = nameServers.Where(FilterEndPoint);
 
             var checker = new OpenResolverChecker(nameServers, queryAddress, queryTypes, detailed);
             return await checker.CheckServersAsync();
-        }
-
-        /**
-         * Checks if this Checker instance can handle the specified IPAddress
-         * (depending on EnableIPv4 and EnableIPv6 options)
-         */
-        private bool FilterEndPoint(EndPoint endPoint)
-        {
-            if (_options.EnableIPv4 && endPoint.AddressFamily == AddressFamily.InterNetwork) return true;
-            if (_options.EnableIPv6 && endPoint.AddressFamily == AddressFamily.InterNetworkV6) return true;
-            return false;
         }
 
         private static IEnumerable<QueryType> ParseQueryTypes(string queryTypesString)
