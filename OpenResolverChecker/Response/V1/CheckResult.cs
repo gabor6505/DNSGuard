@@ -10,7 +10,6 @@ namespace OpenResolverChecker.Response.V1
         public ConnectionError ConnectionError { get; init; }
         public bool PossibleRecursion { get; init; }
         
-        // TODO exclude from response when null
         public DnsQueryResponse DnsQueryResponse { get; init; }
     }
 }

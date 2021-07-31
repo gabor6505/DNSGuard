@@ -25,6 +25,7 @@ namespace OpenResolverChecker
             {
                 // Convert Enum values to strings instead of integers
                 o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                o.JsonSerializerOptions.IgnoreNullValues = true;
             });
             
             services.AddSwaggerGen(c =>
