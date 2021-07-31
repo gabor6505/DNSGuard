@@ -58,6 +58,31 @@ namespace OpenResolverChecker
 
         private async Task<CheckResult> CheckServerAsync(ILookupClient lookupClient, QueryType queryType)
         {
+            var (lookupResponse, connectionError) = await TryQueryAsync(lookupClient, queryType);
+
+            DnsQueryResponse dnsQueryResponse = null;
+            if (_detailed && lookupResponse != null)
+            {
+                dnsQueryResponse = new DnsQueryResponse
+                {
+                    ResponseCode = lookupResponse.Header.ResponseCode,
+                    ResponseFlags = GetHeaderFlags(lookupResponse.Header),
+                    AnswerRecordCount = (ushort) lookupResponse.Header.AnswerCount
+                };
+            }
+
+            return new CheckResult
+            {
+                NameServerIp = lookupClient.NameServers.First().ToString(),
+                QueryType = queryType,
+                ConnectionError = connectionError,
+                PossibleRecursion = lookupResponse?.Header?.RecursionAvailable ?? true,
+                DnsQueryResponse = dnsQueryResponse
+            };
+        }
+
+        private async Task<Tuple<IDnsQueryResponse, ConnectionError>> TryQueryAsync(ILookupClient lookupClient, QueryType queryType)
+        {
             IDnsQueryResponse lookupResponse = null;
             var connectionError = ConnectionError.None;
             try
@@ -79,25 +104,7 @@ namespace OpenResolverChecker
                 else connectionError = ConnectionError.Unknown;
             }
 
-            DnsQueryResponse dnsQueryResponse = null;
-            if (_detailed && lookupResponse != null)
-            {
-                dnsQueryResponse = new DnsQueryResponse
-                {
-                    ResponseCode = lookupResponse.Header.ResponseCode,
-                    ResponseFlags = GetHeaderFlags(lookupResponse.Header),
-                    AnswerRecordCount = (ushort) lookupResponse.Header.AnswerCount
-                };
-            }
-
-            return new CheckResult
-            {
-                NameServerIp = lookupClient.NameServers.First().ToString(),
-                QueryType = queryType,
-                ConnectionError = connectionError,
-                PossibleRecursion = lookupResponse?.Header?.RecursionAvailable ?? true,
-                DnsQueryResponse = dnsQueryResponse
-            };
+            return new Tuple<IDnsQueryResponse, ConnectionError>(lookupResponse, connectionError);
         }
 
         private static string GetHeaderFlags(DnsResponseHeader header)
