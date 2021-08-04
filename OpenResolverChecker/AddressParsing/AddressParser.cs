@@ -98,14 +98,14 @@ namespace OpenResolverChecker.AddressParsing
          * <exception cref="AddressParseException">
          * The string after the colon couldn't be parsed to a ushort port number</exception>
          */
-        private Tuple<string, ushort> ParseHostname(string address)
+        private (string, ushort) ParseHostname(string address)
         {
             var colonCount = address.Count(c => c == ':');
 
             switch (colonCount)
             {
                 case 0:
-                    return new Tuple<string, ushort>(address, _defaultPort);
+                    return (address, _defaultPort);
                 case > 1:
                     throw new AddressParseException(address);
                 default: // colonCount == 1
@@ -113,7 +113,7 @@ namespace OpenResolverChecker.AddressParsing
                     var splitAddress = address.Split(":");
                     try
                     {
-                        return new Tuple<string, ushort>(splitAddress[0], ushort.Parse(splitAddress[1]));
+                        return (splitAddress[0], ushort.Parse(splitAddress[1]));
                     }
                     catch (Exception e)
                     {

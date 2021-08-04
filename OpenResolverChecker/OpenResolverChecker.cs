@@ -81,7 +81,7 @@ namespace OpenResolverChecker
             };
         }
 
-        private async Task<Tuple<IDnsQueryResponse, ConnectionError>> TryQueryAsync(ILookupClient lookupClient, QueryType queryType)
+        private async Task<(IDnsQueryResponse, ConnectionError)> TryQueryAsync(ILookupClient lookupClient, QueryType queryType)
         {
             IDnsQueryResponse lookupResponse = null;
             var connectionError = ConnectionError.None;
@@ -104,7 +104,7 @@ namespace OpenResolverChecker
                 else connectionError = ConnectionError.Unknown;
             }
 
-            return new Tuple<IDnsQueryResponse, ConnectionError>(lookupResponse, connectionError);
+            return (lookupResponse, connectionError);
         }
 
         private static string GetHeaderFlags(DnsResponseHeader header)
