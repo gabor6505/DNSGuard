@@ -35,27 +35,27 @@ namespace OpenResolverChecker.AddressParsing
          */
         public IEnumerable<IPEndPoint> Parse(string address)
         {
-            var ipEndPoint = ParseIpAddress(address);
-            return ipEndPoint != null ? new[] {ipEndPoint} : ResolveHostname(address);
+            if (TryParseIpAddress(address, out var ipEndPoint))
+                return new[] {ipEndPoint};
+
+            return ResolveHostname(address);
         }
 
         /**
-         * Parses the address to an IPEndPoint, returning null if the address couldn't be parsed.
+         * Tries parsing the address to an IPEndPoint, returning true if the address could be parsed, false otherwise.
          * If the address doesn't contain a port number, the Parser's default port will be used.
          */
-        private IPEndPoint ParseIpAddress(string address)
+        private bool TryParseIpAddress(string address, out IPEndPoint ipEndPoint)
         {
             // TODO properly validate IPv4/v6 addresses
-            try
+            if (IPEndPoint.TryParse(address, out ipEndPoint))
             {
-                var ipEndPoint = IPEndPoint.Parse(address);
-                if (ipEndPoint.Port == 0) ipEndPoint.Port = _defaultPort;
-                return ipEndPoint;
+                if (ipEndPoint.Port == 0)
+                    ipEndPoint.Port = _defaultPort;
+                return true;
             }
-            catch (Exception)
-            {
-                return null;
-            }
+
+            return false;
         }
 
         /**
